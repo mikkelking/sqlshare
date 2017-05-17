@@ -13,6 +13,7 @@ app.use("/css", express.static(__dirname + '/css'));
 app.use("/js", express.static(__dirname + '/js'));
 app.use("/bower_components", express.static(__dirname + '/bower_components'));
 
+app.get('/', api.list); // list documents
 app.get('/api/1.0/docs', api.list); // list documents
 app.post('/api/1.0/docs', api.share); // share new document
 app.get('/api/1.0/docs/:docid', api.render); // render a document as html
