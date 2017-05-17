@@ -1,9 +1,9 @@
-var pg = require('pg');
-var fs = require('fs');
-var Mark = require("markup-js");
-var React = require("react");
-var SqlDoc = require("sqldoc");
-
+const pg = require('pg');
+const fs = require('fs');
+const Mark = require("markup-js");
+const React = require("react");
+const SqlDoc = require("sqldoc");
+const _ = require('lodash');
 
 var api = {};
 
@@ -55,6 +55,7 @@ api.share = function(req, response){
 }
 
 var _doc_template = fs.readFileSync(__dirname+'/html/document.html', {encoding: 'utf8'});
+var _doclist_template = fs.readFileSync(__dirname+'/html/doclist.html', {encoding: 'utf8'});
 var _404_template = fs.readFileSync(__dirname+'/html/document-404.html', {encoding: 'utf8'});
 
 api.render = function(req, response){
@@ -80,10 +81,25 @@ api.render = function(req, response){
 }
 
 api.list = function(req, response){
-    response.send('OK');
-    //RunQuery(response, 'SELECT o_guid docid, o_doc doc FROM sqlshare.get_doc($1)', [req.params.docid], function(result){
-    //    
-    //});
+    //response.send('OK');
+	let doclist = [];
+    RunQuery(response, 'SELECT guid docid, doc FROM sqlshare.docs', null, function(result){
+//		console.log(result.rows);
+		_.each(result.rows,row => {
+			doclist.push(row.docid);
+		});
+		let html = "<ul>";
+		_.each(doclist,doc => {
+			html += "<li><a href='/api/1.0/docs/"+doc+"' target='_blank'>"+doc+"</a>";
+		});
+		html += "</ul>";
+        doc = {
+            doclist: html,
+        }
+        var doc_html = Mark.up(_doclist_template, doc);
+        
+        return response.send(doc_html);
+    });
 }
 
 module.exports = api;
